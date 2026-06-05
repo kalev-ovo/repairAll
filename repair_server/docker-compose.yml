@@ -1,6 +1,10 @@
 services:
   repair:
-    build: .
+    build:
+      context: .
+      args:
+        - HTTP_PROXY=${HTTP_PROXY:-}
+        - HTTPS_PROXY=${HTTPS_PROXY:-}
     container_name: repair_server
     restart: always
     ports:
