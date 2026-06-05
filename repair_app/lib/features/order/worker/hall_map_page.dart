@@ -29,7 +29,7 @@ class _HallMapPageState extends ConsumerState<HallMapPage> {
     double? lat, lng;
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low, timeLimit: const Duration(seconds: 5)),
+        desiredAccuracy: LocationAccuracy.low, timeLimit: const Duration(seconds: 5),
       );
       lat = position.latitude;
       lng = position.longitude;

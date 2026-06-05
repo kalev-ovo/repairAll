@@ -29,7 +29,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
   Future<void> _initLocation() async {
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low, timeLimit: const Duration(seconds: 5)),
+        desiredAccuracy: LocationAccuracy.low, timeLimit: const Duration(seconds: 5),
       );
       _center = LatLng(position.latitude, position.longitude);
     } catch (_) {
@@ -83,7 +83,7 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
                     initialZoom: 15.0,
                     onMapEvent: (event) {
                       if (event is MapEventMoveEnd) {
-                        _center = event.center; // MapEventMoveEnd has center
+                        _center = event.camera.center;
                         _reverseGeocode();
                       }
                     },
