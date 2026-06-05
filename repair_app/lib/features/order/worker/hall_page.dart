@@ -84,7 +84,8 @@ class _HallPageState extends ConsumerState<HallPage> {
                   const Icon(Icons.location_on, size: 14, color: Colors.grey),
                   const SizedBox(width: 4),
                   Expanded(child: Text(order.address, style: const TextStyle(color: Colors.grey, fontSize: 12))),
-                  const Text('5km', style: TextStyle(color: Colors.blue, fontSize: 12)),
+                  if (order.price > 0)
+                    Text('¥${(order.price / 100).toStringAsFixed(0)}', style: const TextStyle(color: Colors.orange, fontSize: 14, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],

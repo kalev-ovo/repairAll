@@ -17,6 +17,7 @@ func CreateOrder(customerID int64, req *model.CreateOrderReq) (*model.Order, err
 		Address:     req.Address,
 		Lat:         req.Lat,
 		Lng:         req.Lng,
+		Price:       req.Price,
 	}
 	if order.Images == "" {
 		order.Images = "[]"
