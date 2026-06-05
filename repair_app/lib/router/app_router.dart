@@ -15,6 +15,7 @@ import 'package:repair_app/features/chat/conversation_list.dart';
 import 'package:repair_app/features/review/review_page.dart';
 import 'package:repair_app/features/profile/profile_page.dart';
 import 'package:repair_app/features/profile/worker_profile_page.dart';
+import 'package:repair_app/features/order/worker/income_stats_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authManagerProvider);
@@ -74,6 +75,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) =>
             ReviewPage(userId: int.parse(state.pathParameters['userId']!)),
       ),
+
+      // 师傅收入
+      GoRoute(path: '/income-stats', builder: (_, __) => const IncomeStatsPage()),
 
       // 个人
       GoRoute(path: '/profile', builder: (_, __) => const ProfilePage()),

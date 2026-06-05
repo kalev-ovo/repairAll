@@ -149,3 +149,20 @@ func GetWorkerDetail(c *gin.Context) {
 		"avatar": user.Avatar,
 	}})
 }
+
+// GetWorkerStats 师傅收入统计
+func GetWorkerStats(c *gin.Context) {
+	claims := service.GetClaims(c)
+	if claims.Role != "worker" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "仅师傅可查看收入统计"})
+		return
+	}
+
+	stats, err := repository.GetWorkerStats(claims.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "查询失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
+}
