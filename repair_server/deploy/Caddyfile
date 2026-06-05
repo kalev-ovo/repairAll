@@ -1,14 +1,12 @@
 repair.example.com {
-    reverse_proxy localhost:8080
+    reverse_proxy repair:8080
 
-    # 上传文件静态服务
     handle /uploads/* {
-        root * /opt/repair/data
+        root * /app/data
         file_server
     }
 
-    # 日志
     log {
-        output file /var/log/caddy/repair.log
+        output file /data/repair.log
     }
 }
