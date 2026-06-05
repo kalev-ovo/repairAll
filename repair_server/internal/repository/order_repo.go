@@ -2,6 +2,8 @@ package repository
 
 import (
 	"fmt"
+	"math"
+	"sort"
 	"time"
 
 	"repair_server/internal/model"
@@ -49,6 +51,41 @@ func ListOrdersByCustomer(customerID int64) ([]model.Order, error) {
 // ListPendingOrders 师傅端：查看待接订单
 func ListPendingOrders() ([]model.Order, error) {
 	return queryOrders("WHERE o.status = 'pending' ORDER BY o.created_at DESC")
+}
+
+// ListPendingOrdersByDistance 师傅端：查看待接订单（按距离排序）
+func ListPendingOrdersByDistance(lat, lng float64) ([]model.Order, error) {
+	orders, err := queryOrders("WHERE o.status = 'pending' ORDER BY o.created_at DESC")
+	if err != nil {
+		return nil, err
+	}
+
+	// 计算距离
+	if lat != 0 && lng != 0 {
+		for i := range orders {
+			orders[i].Distance = haversine(lat, lng, orders[i].Lat, orders[i].Lng)
+		}
+		// 按距离升序
+		sort.Slice(orders, func(i, j int) bool {
+			return orders[i].Distance < orders[j].Distance
+		})
+	}
+	return orders, nil
+}
+
+// haversine 计算两点间距离（km）
+func haversine(lat1, lng1, lat2, lng2 float64) float64 {
+	if lat2 == 0 && lng2 == 0 {
+		return 9999 // 无位置信息的订单排最后
+	}
+	const R = 6371.0
+	dLat := (lat2 - lat1) * (3.14159265 / 180)
+	dLng := (lng2 - lng1) * (3.14159265 / 180)
+	a := math.Sin(dLat/2)*math.Sin(dLat/2) +
+		math.Cos(lat1*(3.14159265/180))*math.Cos(lat2*(3.14159265/180))*
+			math.Sin(dLng/2)*math.Sin(dLng/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	return math.Round(R*c*10) / 10 // 保留 1 位小数
 }
 
 // ListOrdersByWorker 师傅查看已接订单

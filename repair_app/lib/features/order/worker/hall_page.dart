@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:repair_app/core/providers.dart';
 import 'package:repair_app/features/order/models/order.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 
 class HallPage extends ConsumerStatefulWidget {
@@ -23,8 +24,25 @@ class _HallPageState extends ConsumerState<HallPage> {
 
   Future<void> _loadOrders() async {
     try {
+      // 获取当前位置
+      double? lat, lng;
+      try {
+        final position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(accuracy: LocationAccuracy.low, timeLimit: Duration(seconds: 5)),
+        );
+        lat = position.latitude;
+        lng = position.longitude;
+      } catch (_) {
+        // 位置不可用时降级
+      }
+
       final api = ref.read(apiClientProvider);
-      final resp = await api.get('/orders', params: {'type': 'hall'});
+      final params = <String, dynamic>{'type': 'hall'};
+      if (lat != null && lng != null) {
+        params['lat'] = lat.toString();
+        params['lng'] = lng.toString();
+      }
+      final resp = await api.get('/orders', params: params);
       setState(() {
         _orders = (resp.data as List).map((e) => OrderModel.fromJson(e)).toList();
         _loading = false;
@@ -85,7 +103,11 @@ class _HallPageState extends ConsumerState<HallPage> {
                   const SizedBox(width: 4),
                   Expanded(child: Text(order.address, style: const TextStyle(color: Colors.grey, fontSize: 12))),
                   if (order.price > 0)
-                    Text('¥${(order.price / 100).toStringAsFixed(0)}', style: const TextStyle(color: Colors.orange, fontSize: 14, fontWeight: FontWeight.bold)),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Text('¥${(order.price / 100).toStringAsFixed(0)}', style: const TextStyle(color: Colors.orange, fontSize: 14, fontWeight: FontWeight.bold)),
+                    ),
+                  Text(order.formattedDistance, style: const TextStyle(color: Colors.blue, fontSize: 12)),
                 ],
               ),
             ],
