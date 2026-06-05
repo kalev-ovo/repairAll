@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:repair_app/core/providers.dart';
+import 'package:repair_app/features/order/customer/location_picker_page.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,6 +24,8 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
   final _imagePicker = ImagePicker();
   final List<File> _images = [];
   final List<String> _imageUrls = [];
+  double _pickedLat = 0;
+  double _pickedLng = 0;
   bool _loading = false;
 
   @override
@@ -63,6 +66,19 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
     });
   }
 
+  Future<void> _pickLocation() async {
+    final result = await Navigator.of(context).push<Map<String, dynamic>>(
+      MaterialPageRoute(builder: (_) => const LocationPickerPage()),
+    );
+    if (result != null && mounted) {
+      setState(() {
+        _addressController.text = result['address'] as String? ?? '';
+        _pickedLat = (result['lat'] as num).toDouble();
+        _pickedLng = (result['lng'] as num).toDouble();
+      });
+    }
+  }
+
   Future<void> _uploadImages() async {
     _imageUrls.clear();
     final api = ref.read(apiClientProvider);
@@ -92,8 +108,8 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
         'category_id': int.tryParse(widget.categoryId ?? '0') ?? 1,
         'description': desc,
         'address': address,
-        'lat': 30.25,
-        'lng': 120.16,
+        'lat': _pickedLat,
+        'lng': _pickedLng,
         'images': _imageUrls.toString(),
         'price': int.tryParse(_priceController.text.trim()) ?? 0,
       });
@@ -146,6 +162,12 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
                 labelText: '上门地址',
                 prefixIcon: Icon(Icons.location_on),
               ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _pickLocation,
+              icon: const Icon(Icons.map, size: 18),
+              label: Text(_pickedLat != 0 ? '已定位 ✓' : '在地图上选择位置'),
             ),
             const SizedBox(height: 12),
             TextField(
