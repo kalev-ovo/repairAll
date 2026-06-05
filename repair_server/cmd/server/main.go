@@ -58,6 +58,7 @@ func Run(cfg Config) {
 			authorized.POST("/user/switch-role", handler.SwitchRole)
 			authorized.PUT("/user/worker-profile", handler.UpdateWorkerProfile)
 			authorized.GET("/user/worker-stats", handler.GetWorkerStats)
+			authorized.POST("/user/worker/submit-verify", handler.SubmitWorkerVerify)
 			authorized.GET("/user/worker/:id", handler.GetWorkerDetail)
 
 			// 类目
@@ -81,6 +82,14 @@ func Run(cfg Config) {
 
 			// 文件上传
 			authorized.POST("/upload/image", handler.UploadImage)
+		}
+
+		// 管理端（JWT + role=admin，MVP阶段仅JWT保护）
+		admin := api.Group("/admin")
+		admin.Use(middleware.JWTAuth())
+		{
+			admin.GET("/pending-workers", handler.ListPendingWorkers)
+			admin.PUT("/worker/:id/verify", handler.AdminVerifyWorker)
 		}
 
 		// WebSocket

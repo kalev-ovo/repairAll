@@ -166,3 +166,72 @@ func GetWorkerStats(c *gin.Context) {
 
 	c.JSON(http.StatusOK, stats)
 }
+
+// SubmitWorkerVerify 师傅提交认证申请
+func SubmitWorkerVerify(c *gin.Context) {
+	claims := service.GetClaims(c)
+	if claims.Role != "worker" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "仅师傅可提交认证"})
+		return
+	}
+
+	worker, err := repository.GetWorkerByUserID(claims.UserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "请先完善师傅资料"})
+		return
+	}
+	if worker.VerifyStatus == "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "已提交，请等待审核"})
+		return
+	}
+	if worker.VerifyStatus == "verified" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "已通过认证"})
+		return
+	}
+
+	if err := repository.SubmitWorkerVerify(claims.UserID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "提交失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "认证申请已提交，请等待审核"})
+}
+
+// ListPendingWorkers 管理员查看待审核师傅
+func ListPendingWorkers(c *gin.Context) {
+	workers, err := repository.ListPendingWorkers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "查询失败"})
+		return
+	}
+	if workers == nil {
+		workers = []model.Worker{}
+	}
+	c.JSON(http.StatusOK, workers)
+}
+
+// AdminVerifyWorker 管理员审核师傅
+func AdminVerifyWorker(c *gin.Context) {
+	idStr := c.Param("id")
+	userID, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+
+	var req struct {
+		Approved bool   `json:"approved"`
+		Note     string `json:"note"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+
+	if err := repository.VerifyWorker(userID, req.Approved, req.Note); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "审核完成"})
+}

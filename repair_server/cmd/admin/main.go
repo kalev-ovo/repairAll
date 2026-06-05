@@ -128,17 +128,48 @@ func adminUser(action string, args []string) {
 
 func adminWorker(action string, args []string) {
 	switch action {
+	case "pending":
+		workers, err := repository.ListPendingWorkers()
+		if err != nil {
+			fmt.Printf("Query failed: %v\n", err)
+			return
+		}
+		if len(workers) == 0 {
+			fmt.Println("No pending workers")
+			return
+		}
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(w, "UserID\tName\tCity\tBio")
+		for _, wk := range workers {
+			fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", wk.UserID, wk.RealName, wk.ServiceCity, wk.Bio)
+		}
+		w.Flush()
 	case "verify":
 		if len(args) < 1 {
 			fmt.Println("Usage: repair admin worker verify <user_id>")
 			return
 		}
 		id, _ := strconv.ParseInt(args[0], 10, 64)
-		_, err := repository.DB.Exec("UPDATE workers SET is_verified=1 WHERE user_id=?", id)
+		_, err := repository.DB.Exec(
+			"UPDATE workers SET is_verified=1, verify_status='verified' WHERE user_id=?", id)
 		if err != nil {
 			fmt.Printf("Verify failed: %v\n", err)
 		} else {
 			fmt.Printf("Worker user_id=%d verified\n", id)
+		}
+	case "reject":
+		if len(args) < 2 {
+			fmt.Println("Usage: repair admin worker reject <user_id> <reason>")
+			return
+		}
+		id, _ := strconv.ParseInt(args[0], 10, 64)
+		note := args[1]
+		_, err := repository.DB.Exec(
+			"UPDATE workers SET is_verified=0, verify_status='rejected', verify_note=? WHERE user_id=?", note, id)
+		if err != nil {
+			fmt.Printf("Reject failed: %v\n", err)
+		} else {
+			fmt.Printf("Worker user_id=%d rejected: %s\n", id, note)
 		}
 	default:
 		fmt.Printf("Unknown action: %s\n", action)
