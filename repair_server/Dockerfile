@@ -1,8 +1,6 @@
 FROM golang:alpine AS builder
 
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
-ENV HTTP_PROXY=${HTTP_PROXY} HTTPS_PROXY=${HTTPS_PROXY}
+ENV GOPROXY=https://mirrors.tencent.com/go/,direct
 
 WORKDIR /app
 COPY go.mod go.sum ./
