@@ -81,7 +81,16 @@ class _HallPageState extends ConsumerState<HallPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('接单大厅')),
+      appBar: AppBar(
+        title: const Text('接单大厅'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map),
+            tooltip: '地图视图',
+            onPressed: () => context.push('/orders/hall/map'),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // 类目筛选
