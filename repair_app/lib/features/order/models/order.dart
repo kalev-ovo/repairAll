@@ -19,6 +19,7 @@ class OrderModel {
   final String? customerName;
   final String? workerName;
   final String? categoryName;
+  final double distance;
 
   OrderModel({
     required this.id,
@@ -41,6 +42,7 @@ class OrderModel {
     this.customerName,
     this.workerName,
     this.categoryName,
+    this.distance = 0,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -65,6 +67,7 @@ class OrderModel {
       customerName: json['customer_name'] as String?,
       workerName: json['worker_name'] as String?,
       categoryName: json['category_name'] as String?,
+      distance: (json['distance'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -80,4 +83,11 @@ class OrderModel {
   }
 
   bool get canCancel => ['pending', 'accepted', 'ongoing'].contains(status);
+
+  String get formattedDistance {
+    if (distance <= 0) return '';
+    if (distance >= 9999) return '';
+    if (distance < 1) return '${(distance * 1000).toInt()}m';
+    return '${distance.toStringAsFixed(1)}km';
+  }
 }

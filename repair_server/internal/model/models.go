@@ -67,9 +67,10 @@ type Order struct {
 	CompletedAt  *time.Time `json:"completed_at"`
 
 	// 关联字段（查询时填充）
-	CustomerName string `json:"customer_name,omitempty"`
-	WorkerName   string `json:"worker_name,omitempty"`
-	CategoryName string `json:"category_name,omitempty"`
+	CustomerName string  `json:"customer_name,omitempty"`
+	WorkerName   string  `json:"worker_name,omitempty"`
+	CategoryName string  `json:"category_name,omitempty"`
+	Distance     float64 `json:"distance,omitempty"` // km，查询时计算
 }
 
 // Review 评价
