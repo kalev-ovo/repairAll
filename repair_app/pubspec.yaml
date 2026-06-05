@@ -1,0 +1,51 @@
+name: repair_app
+description: 家政维修服务平台 - 用户端 & 师傅端
+
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 状态管理
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # 路由
+  go_router: ^13.0.0
+
+  # 网络
+  dio: ^5.4.0
+  web_socket_channel: ^2.4.3
+
+  # 本地存储
+  shared_preferences: ^2.2.2
+
+  # 地图
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  geolocator: ^10.1.0
+
+  # UI
+  cached_network_image: ^3.3.1
+  image_picker: ^1.0.7
+
+  # 工具
+  intl: ^0.19.0
+  json_annotation: ^4.8.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
+  riverpod_generator: ^2.3.9
+
+flutter:
+  uses-material-design: true
+  assets: []

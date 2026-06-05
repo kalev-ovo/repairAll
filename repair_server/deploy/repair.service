@@ -1,0 +1,14 @@
+[Unit]
+Description=Repair Server - 家政维修服务平台
+After=network.target
+
+[Service]
+Type=simple
+User=www
+WorkingDirectory=/opt/repair
+ExecStart=/opt/repair/repair server --port 8080 --db /opt/repair/data/repair.db --data-dir /opt/repair/data
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
