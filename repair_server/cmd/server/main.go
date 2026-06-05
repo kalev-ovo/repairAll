@@ -54,6 +54,7 @@ func Run(cfg Config) {
 			authorized.PUT("/user/profile", handler.UpdateProfile)
 			authorized.POST("/user/switch-role", handler.SwitchRole)
 			authorized.PUT("/user/worker-profile", handler.UpdateWorkerProfile)
+			authorized.GET("/user/worker-stats", handler.GetWorkerStats)
 			authorized.GET("/user/worker/:id", handler.GetWorkerDetail)
 
 			// 类目

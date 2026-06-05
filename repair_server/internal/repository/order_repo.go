@@ -90,6 +90,48 @@ func queryOrders(where string, args ...interface{}) ([]model.Order, error) {
 	return orders, nil
 }
 
+// WorkerStats 师傅收入统计
+type WorkerStats struct {
+	TotalOrders    int   `json:"total_orders"`
+	TotalEarnings  int64 `json:"total_earnings"`
+	MonthOrders    int   `json:"month_orders"`
+	MonthEarnings  int64 `json:"month_earnings"`
+	PendingOrders  int   `json:"pending_orders"`
+	OngoingOrders  int   `json:"ongoing_orders"`
+}
+
+// GetWorkerStats 获取师傅收入统计
+func GetWorkerStats(workerID int64) (*WorkerStats, error) {
+	s := &WorkerStats{}
+
+	// 已完成订单总数和总收入
+	DB.QueryRow(
+		"SELECT COUNT(*), COALESCE(SUM(price), 0) FROM orders WHERE worker_id=? AND status='completed'",
+		workerID,
+	).Scan(&s.TotalOrders, &s.TotalEarnings)
+
+	// 本月已完成订单和收入
+	DB.QueryRow(
+		`SELECT COUNT(*), COALESCE(SUM(price), 0) FROM orders
+		 WHERE worker_id=? AND status='completed'
+		 AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')`,
+		workerID,
+	).Scan(&s.MonthOrders, &s.MonthEarnings)
+
+	// 待接单数（hall中pending的）
+	DB.QueryRow(
+		"SELECT COUNT(*) FROM orders WHERE status='pending'",
+	).Scan(&s.PendingOrders)
+
+	// 进行中的订单
+	DB.QueryRow(
+		"SELECT COUNT(*) FROM orders WHERE worker_id=? AND status='ongoing'",
+		workerID,
+	).Scan(&s.OngoingOrders)
+
+	return s, nil
+}
+
 // UpdateOrderStatus 更新订单状态
 func UpdateOrderStatus(id int64, status string, extra map[string]interface{}) error {
 	query := "UPDATE orders SET status=? "

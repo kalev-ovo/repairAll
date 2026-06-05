@@ -124,7 +124,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               icon: Icons.bar_chart,
               label: '收入统计',
               color: Colors.orange,
-              onTap: () {},
+              onTap: () => context.go('/income-stats'),
             ),
           ),
         ],
