@@ -16,6 +16,7 @@ import 'package:repair_app/features/review/review_page.dart';
 import 'package:repair_app/features/profile/profile_page.dart';
 import 'package:repair_app/features/profile/worker_profile_page.dart';
 import 'package:repair_app/features/order/worker/income_stats_page.dart';
+import 'package:repair_app/features/order/worker/hall_map_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authManagerProvider);
@@ -52,6 +53,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             OrderDetailPage(orderId: int.parse(state.pathParameters['orderId']!)),
       ),
       GoRoute(path: '/orders/hall', builder: (_, __) => const HallPage()),
+      GoRoute(path: '/orders/hall/map', builder: (_, __) => const HallMapPage()),
       GoRoute(
         path: '/orders/hall/:orderId',
         builder: (_, state) =>
