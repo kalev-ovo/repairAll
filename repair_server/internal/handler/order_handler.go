@@ -47,10 +47,11 @@ func ListOrders(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "仅师傅可查看接单大厅"})
 			return
 		}
-		// 读取用户位置，用于距离计算
+		// 读取用户位置和类目筛选
 		lat := parseFloatParam(c.Query("lat"))
 		lng := parseFloatParam(c.Query("lng"))
-		orders, err = repository.ListPendingOrdersByDistance(lat, lng)
+		categoryID := parseIntParam(c.Query("category_id"))
+		orders, err = repository.ListPendingOrdersByDistance(lat, lng, categoryID)
 	case "jobs":
 		if claims.Role != "worker" {
 			c.JSON(http.StatusForbidden, gin.H{"error": "仅师傅可查看已接订单"})
@@ -79,6 +80,15 @@ func parseFloatParam(s string) float64 {
 	var f float64
 	fmt.Sscanf(s, "%f", &f)
 	return f
+}
+
+func parseIntParam(s string) int64 {
+	if s == "" {
+		return 0
+	}
+	var i int64
+	fmt.Sscanf(s, "%d", &i)
+	return i
 }
 
 // GetOrder 订单详情

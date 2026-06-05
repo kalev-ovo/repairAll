@@ -53,9 +53,16 @@ func ListPendingOrders() ([]model.Order, error) {
 	return queryOrders("WHERE o.status = 'pending' ORDER BY o.created_at DESC")
 }
 
-// ListPendingOrdersByDistance 师傅端：查看待接订单（按距离排序）
-func ListPendingOrdersByDistance(lat, lng float64) ([]model.Order, error) {
-	orders, err := queryOrders("WHERE o.status = 'pending' ORDER BY o.created_at DESC")
+// ListPendingOrdersByDistance 师傅端：查看待接订单（按距离排序，可选类目筛选）
+func ListPendingOrdersByDistance(lat, lng float64, categoryID int64) ([]model.Order, error) {
+	where := "WHERE o.status = 'pending'"
+	args := []interface{}{}
+	if categoryID > 0 {
+		where += " AND o.category_id = ?"
+		args = append(args, categoryID)
+	}
+	where += " ORDER BY o.created_at DESC"
+	orders, err := queryOrders(where, args...)
 	if err != nil {
 		return nil, err
 	}
