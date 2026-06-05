@@ -122,6 +122,7 @@ type CreateOrderReq struct {
 	Address     string  `json:"address" binding:"required"`
 	Lat         float64 `json:"lat"`
 	Lng         float64 `json:"lng"`
+	Price       int64   `json:"price"` // 预算价格（分），可选
 }
 
 type UpdateProfileReq struct {

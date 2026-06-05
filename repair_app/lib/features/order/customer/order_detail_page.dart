@@ -137,6 +137,10 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _infoRow(Icons.category, '服务类别', _order!.categoryName ?? '-'),
+            if (_order!.price > 0) ...[
+              const Divider(),
+              _infoRow(Icons.monetization_on, '预算价格', '¥${(_order!.price / 100).toStringAsFixed(2)}'),
+            ],
             const Divider(),
             _infoRow(Icons.location_on, '地址', _order!.address),
             if (_order!.workerName != null) ...[

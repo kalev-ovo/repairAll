@@ -19,6 +19,7 @@ class CreateOrderPage extends ConsumerStatefulWidget {
 class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
   final _descController = TextEditingController();
   final _addressController = TextEditingController();
+  final _priceController = TextEditingController();
   final _imagePicker = ImagePicker();
   final List<File> _images = [];
   final List<String> _imageUrls = [];
@@ -36,6 +37,7 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
   void dispose() {
     _descController.dispose();
     _addressController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
@@ -93,6 +95,7 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
         'lat': 30.25,
         'lng': 120.16,
         'images': _imageUrls.toString(),
+        'price': int.tryParse(_priceController.text.trim()) ?? 0,
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -142,6 +145,16 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
               decoration: const InputDecoration(
                 labelText: '上门地址',
                 prefixIcon: Icon(Icons.location_on),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _priceController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: '预算价格（元，可选）',
+                hintText: '例如：100',
+                prefixIcon: Icon(Icons.monetization_on_outlined),
               ),
             ),
             const SizedBox(height: 16),
