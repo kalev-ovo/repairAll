@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:repair_app/core/providers.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
 
 class CreateOrderPage extends ConsumerStatefulWidget {
@@ -17,6 +19,9 @@ class CreateOrderPage extends ConsumerStatefulWidget {
 class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
   final _descController = TextEditingController();
   final _addressController = TextEditingController();
+  final _imagePicker = ImagePicker();
+  final List<File> _images = [];
+  final List<String> _imageUrls = [];
   bool _loading = false;
 
   @override
@@ -34,6 +39,37 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
     super.dispose();
   }
 
+  Future<void> _pickImages() async {
+    final picked = await _imagePicker.pickMultiImage(
+      imageQuality: 80,
+      limit: 9,
+    );
+    if (picked.isNotEmpty) {
+      setState(() {
+        for (final xfile in picked) {
+          if (_images.length < 9) {
+            _images.add(File(xfile.path));
+          }
+        }
+      });
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _images.removeAt(index);
+    });
+  }
+
+  Future<void> _uploadImages() async {
+    _imageUrls.clear();
+    final api = ref.read(apiClientProvider);
+    for (final image in _images) {
+      final resp = await api.upload('/upload/image', filePath: image.path);
+      _imageUrls.add(resp.data['url'] as String);
+    }
+  }
+
   Future<void> _submit() async {
     final desc = _descController.text.trim();
     final address = _addressController.text.trim();
@@ -46,6 +82,9 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
 
     setState(() => _loading = true);
     try {
+      // 先上传图片
+      await _uploadImages();
+
       final api = ref.read(apiClientProvider);
       await api.post('/orders', data: {
         'category_id': int.tryParse(widget.categoryId ?? '0') ?? 1,
@@ -53,7 +92,7 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
         'address': address,
         'lat': 30.25,
         'lng': 120.16,
-        'images': '[]',
+        'images': _imageUrls.toString(),
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -78,8 +117,7 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
       appBar: AppBar(title: Text('发布需求${widget.categoryName != null ? " - ${widget.categoryName}" : ""}')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: ListView(
           children: [
             if (widget.categoryName != null)
               Card(
@@ -105,6 +143,53 @@ class _CreateOrderPageState extends ConsumerState<CreateOrderPage> {
                 labelText: '上门地址',
                 prefixIcon: Icon(Icons.location_on),
               ),
+            ),
+            const SizedBox(height: 16),
+            // 图片选择
+            const Text('上传图片（可选）', style: TextStyle(fontSize: 14, color: Colors.grey)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ..._images.asMap().entries.map((entry) {
+                  return Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(entry.value, width: 80, height: 80, fit: BoxFit.cover),
+                      ),
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: GestureDetector(
+                          onTap: () => _removeImage(entry.key),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.close, size: 18, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }),
+                if (_images.length < 9)
+                  GestureDetector(
+                    onTap: _pickImages,
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.add_photo_alternate, color: Colors.grey, size: 28),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 24),
             ElevatedButton(
