@@ -17,20 +17,22 @@ type User struct {
 
 // Worker 师傅资料
 type Worker struct {
-	ID            int64   `json:"id"`
-	UserID        int64   `json:"user_id"`
-	RealName      string  `json:"real_name"`
-	IDCard        string  `json:"-"`
-	Skills        string  `json:"skills"`        // JSON array
-	YearsExp      int     `json:"years_exp"`
-	CertPhotos    string  `json:"cert_photos"`   // JSON array
-	ServiceCity   string  `json:"service_city"`
-	Lat           float64 `json:"lat"`
-	Lng           float64 `json:"lng"`
-	ServiceRadius int     `json:"service_radius"` // km
-	Bio           string  `json:"bio"`
-	IsVerified    bool    `json:"is_verified"`
-	Balance       int64   `json:"balance"` // 分
+	ID            int64     `json:"id"`
+	UserID        int64     `json:"user_id"`
+	RealName      string    `json:"real_name"`
+	IDCard        string    `json:"-"`
+	Skills        string    `json:"skills"`        // JSON array
+	YearsExp      int       `json:"years_exp"`
+	CertPhotos    string    `json:"cert_photos"`   // JSON array
+	ServiceCity   string    `json:"service_city"`
+	Lat           float64   `json:"lat"`
+	Lng           float64   `json:"lng"`
+	ServiceRadius int       `json:"service_radius"` // km
+	Bio           string    `json:"bio"`
+	IsVerified    bool      `json:"is_verified"`
+	VerifyStatus  string    `json:"verify_status"` // none/pending/verified/rejected
+	VerifyNote    string    `json:"verify_note"`
+	Balance       int64     `json:"balance"` // 分
 	CreatedAt     time.Time `json:"created_at"`
 }
 

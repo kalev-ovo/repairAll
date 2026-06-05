@@ -71,10 +71,12 @@ func GetWorkerByUserID(userID int64) (*model.Worker, error) {
 	w := &model.Worker{}
 	err := DB.QueryRow(
 		`SELECT id, user_id, real_name, id_card, skills, years_exp, cert_photos,
-		        service_city, lat, lng, service_radius, bio, is_verified, balance, created_at
+		        service_city, lat, lng, service_radius, bio, is_verified,
+		        COALESCE(verify_status,'none'), COALESCE(verify_note,''), balance, created_at
 		 FROM workers WHERE user_id=?`, userID,
 	).Scan(&w.ID, &w.UserID, &w.RealName, &w.IDCard, &w.Skills, &w.YearsExp, &w.CertPhotos,
-		&w.ServiceCity, &w.Lat, &w.Lng, &w.ServiceRadius, &w.Bio, &w.IsVerified, &w.Balance, &w.CreatedAt)
+		&w.ServiceCity, &w.Lat, &w.Lng, &w.ServiceRadius, &w.Bio, &w.IsVerified,
+		&w.VerifyStatus, &w.VerifyNote, &w.Balance, &w.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +90,60 @@ func UpdateWorker(userID int64, w *model.Worker) error {
 		w.RealName, w.IDCard, w.Skills, w.YearsExp, w.ServiceCity, w.Lat, w.Lng, w.ServiceRadius, w.Bio, userID,
 	)
 	return err
+}
+
+// SubmitWorkerVerify 师傅提交认证申请
+func SubmitWorkerVerify(userID int64) error {
+	_, err := DB.Exec(
+		"UPDATE workers SET verify_status='pending' WHERE user_id=?",
+		userID,
+	)
+	return err
+}
+
+// VerifyWorker 管理员审核师傅
+func VerifyWorker(userID int64, approved bool, note string) error {
+	status := "verified"
+	isVerified := 1
+	if !approved {
+		status = "rejected"
+		isVerified = 0
+	}
+	_, err := DB.Exec(
+		"UPDATE workers SET verify_status=?, verify_note=?, is_verified=? WHERE user_id=?",
+		status, note, isVerified, userID,
+	)
+	return err
+}
+
+// ListPendingWorkers 管理员查看待审核师傅列表
+func ListPendingWorkers() ([]model.Worker, error) {
+	rows, err := DB.Query(
+		`SELECT w.id, w.user_id, w.real_name, COALESCE(w.skills,'[]'), w.years_exp,
+		        w.service_city, w.bio, COALESCE(w.verify_status,'none'),
+		        u.name, u.phone, u.created_at
+		 FROM workers w JOIN users u ON w.user_id = u.id
+		 WHERE w.verify_status='pending'
+		 ORDER BY w.created_at ASC`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var workers []model.Worker
+	for rows.Next() {
+		var w model.Worker
+		var userName, userPhone string
+		var createdAt interface{}
+		if err := rows.Scan(&w.ID, &w.UserID, &w.RealName, &w.Skills, &w.YearsExp,
+			&w.ServiceCity, &w.Bio, &w.VerifyStatus,
+			&userName, &userPhone, &createdAt); err != nil {
+			return nil, err
+		}
+		workers = append(workers, w)
+	}
+	return workers, nil
 }
 
 func ListVerifiedWorkers() ([]model.Worker, error) {
