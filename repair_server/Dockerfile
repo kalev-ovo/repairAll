@@ -16,4 +16,4 @@ EXPOSE 8080
 
 ENV JWT_SECRET=change_me_in_production
 
-CMD ["./repair", "server", "--port", "8080", "--db", "/app/data/repair.db", "--data-dir", "/app/data"]
+CMD ./repair server --port 8080 --db /app/data/repair.db --data-dir /app/data
