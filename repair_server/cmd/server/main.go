@@ -28,6 +28,9 @@ func Run(cfg Config) {
 		log.Fatalf("Failed to init database: %v", err)
 	}
 
+	// 设置上传目录
+	handler.UploadDir = cfg.DataDir + "/uploads"
+
 	// Gin 路由
 	r := gin.Default()
 	r.Use(middleware.CORS())
@@ -75,6 +78,9 @@ func Run(cfg Config) {
 
 			// 聊天记录
 			authorized.GET("/chat/history", handler.GetChatHistory)
+
+			// 文件上传
+			authorized.POST("/upload/image", handler.UploadImage)
 		}
 
 		// WebSocket

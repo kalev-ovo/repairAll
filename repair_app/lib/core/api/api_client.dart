@@ -44,4 +44,14 @@ class ApiClient {
       dio.put(path, data: data);
 
   Future<Response> delete(String path) => dio.delete(path);
+
+  // 上传文件（FormData multipart）
+  Future<Response> upload(String path, {required String filePath, String fieldName = 'file'}) async {
+    final formData = FormData.fromMap({
+      fieldName: await MultipartFile.fromFile(filePath),
+    });
+    return dio.post(path, data: formData, options: Options(
+      contentType: 'multipart/form-data',
+    ));
+  }
 }
