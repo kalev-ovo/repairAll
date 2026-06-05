@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  repair:
+    build: .
+    container_name: repair_server
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - repair_data:/app/data
+    environment:
+      - JWT_SECRET=${JWT_SECRET:-change_me_in_production}
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: repair_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - repair_data:/app/data:ro
+      - caddy_data:/data
+
+volumes:
+  repair_data:
+  caddy_data:
